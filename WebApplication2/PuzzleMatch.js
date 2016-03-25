@@ -51,24 +51,32 @@
         };        
     }
 
-    function board2(boardHeight, boardWidth, tileHeight, tileWidth, tileImage) {
+    function board2(boardHeight, boardWidth, tileHeight, tileWidth, tileImage) { //also relies on blockTypes, variable for how many types
         var self = this;
         //private properties
         var tileWidth = tileWidth;
         var tileHeight = tileHeight;
         var tileImage = tileImage;
 
+        var numRows = boardHeight;
+        var numColumns = boardWidth;
+
         var field = {};
+
+        var findHorizontalMatches  = function () {
+
+        };
+
         var shuffle = function () {
-            console.log("this.numRows:", self.numRows, "this.numColumns", self.numColumns, "this:", self);
-            for (var y = 0; y < self.numRows; y++) {
-                for (var x = 0; x < self.numColumns; x++) {
+            console.log("this.numRows:", numRows, "this.numColumns", numColumns, "this:", self);
+            for (var y = 0; y < numRows; y++) {
+                for (var x = 0; x < numColumns; x++) {
                     do {
                         var blockType = Math.floor(Math.random() * blockTypes);
-                    } while ((x >= 2 && blockType == field[y * self.numColumns + x - 1] && blockType == field[y * self.numColumns + x - 2])
-                        || (y >= 2 && blockType == field[(y - 1) * self.numColumns + x] && blockType == field[(y - 2) * self.numColumns + x]));
-                    field[y * self.numColumns + x] = new block((blockType), x, y);
-                    //console.log(field[y * self.numColumns + x], "field");
+                    } while ((x >= 2 && blockType == field[y * numColumns + x - 1] && blockType == field[y * numColumns + x - 2])
+                        || (y >= 2 && blockType == field[(y - 1) * numColumns + x] && blockType == field[(y - 2) * numColumns + x]));
+                    field[y * numColumns + x] = new block((blockType), x, y);
+                    //console.log(field[y * numColumns + x], "field");
                 }
             }
         };
@@ -119,6 +127,10 @@
 
             this.setBlock(block1.row, block1.column, block1);
             this.setBlock(block2.row, block2.column, block2);
+        };
+
+        this.solveBoard = function () {
+
         };
 
         this.mouseToBlockCoords = function (coords) { // Expects x and y properties. Returns object with row and column properties
