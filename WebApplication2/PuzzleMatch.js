@@ -22,6 +22,8 @@
 
     var board;
 
+    var Objects; //module for objects
+
     function board(boardHeight, boardWidth, tileHeight, tileWidth, numBlockColors) {
 
         var self = this;
@@ -33,7 +35,7 @@
         var numRows = boardHeight;
         var numColumns = boardWidth;
 
-        var field = {};
+        var field = {}; //contains the board state
 
         function block(type, column, row) {
             this.column = column;
@@ -45,7 +47,7 @@
                 return "Block type: " + this.type + " Position: " + this.row + "," + this.column + ".";
             };
 
-            this.draw = function (context) { //relies on TILE_WIDTH, TILE_HEIGHT
+            this.draw = function (context) {
                 context.save();
                 if (this.selected == true) context.globalAlpha = 0.5;
                 context.drawImage(tileImage, this.type * tileWidth, 0, tileWidth, tileHeight, this.column * tileWidth, this.row * tileHeight, tileWidth, tileHeight);
@@ -182,11 +184,6 @@
         if(selectedBlock)
         {
             selectedBlock.drawSelected(ctx, lastMousePos.x, lastMousePos.y);
-            /*ctx.save();
-            ctx.globalAlpha = 0.8;
-            ctx.drawImage(tileImage2, selectedBlock.type * TILE_WIDTH, 0, TILE_WIDTH, TILE_HEIGHT, lastMousePos.x - TILE_WIDTH * TILE_SELECT_SIZE_MOD / 2, lastMousePos.y - TILE_HEIGHT * TILE_SELECT_SIZE_MOD / 2, TILE_WIDTH * TILE_SELECT_SIZE_MOD, TILE_HEIGHT * TILE_SELECT_SIZE_MOD)
-            ctx.restore();
-            */
         }
     }
 
@@ -229,7 +226,7 @@
         {   
             tileImage2 = window.resources.images["tileImage"];
             board = new board(BOARD_HEIGHT, BOARD_WIDTH, TILE_HEIGHT, TILE_WIDTH, blockTypes);
-            initCanvas();
+            initCanvas(canvas);
             board.init(tileImage2);
             gameLoop();
         }
@@ -275,29 +272,25 @@
         }
     }
 
-    function initCanvas()
+    function initCanvas(gameCanvas)
     {
-        canvas.onmousedown = onMouseDown;
+        gameCanvas.onmousedown = onMouseDown;
         window.onmouseup = onMouseUp;
         window.onmousemove = onMouseMove;
 
-        canvas.width = TILE_WIDTH * board.numColumns;
-        canvas.height = TILE_HEIGHT * board.numRows;
+        gameCanvas.width = TILE_WIDTH * board.numColumns;
+        gameCanvas.height = TILE_HEIGHT * board.numRows;
     }
 
     function init()
     {
         window.resources.loadResources();
 
-        
-
         canvasInfo = this.canvasInfo;
         canvas = canvasInfo.canvas;
         ctx = canvasInfo.ctx;
 
         lastTime = this.lastTime;
-
-        
 
         startGame();
     }

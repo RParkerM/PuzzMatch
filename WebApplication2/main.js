@@ -1,4 +1,8 @@
-﻿(function () {
+﻿//Important: Always include this file last
+//Main file for creating the canvas, and initializing the game
+
+
+(function () {
     function initializeGameCanvas() {
         var gameContainer = document.getElementById('gameContainer');
         var canvas = document.createElement("canvas");
@@ -11,33 +15,10 @@
         return {"canvas": canvas,"ctx": ctx};
     }
 
-    function render()
-    {
-
-    }
-    function update()
-    {
-
-    }
-
-    function gameLoop()
-    {
-        var now = Date.now();
-        var dt = (now - this.lastTime) / 1000;
-
-        update(dt);
-        render();
-
-        this.lastTime = now;
-        //console.log(this);
-        requestAnimationFrame(this.gameLoop.bind(this));
-    }
-
     function main() {
         
         var canvasInfo = initializeGameCanvas();
-        var game = { "init": RPMPong.init, "canvasInfo": canvasInfo, "lastTime": Date.now() };
-        game.init = puzzmatch.init;
+        var game = { "init": puzzmatch.init, "canvasInfo": canvasInfo, "lastTime": Date.now() };
         game.init();
     }
     
