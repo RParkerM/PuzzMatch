@@ -13,7 +13,7 @@
     var ctx;
     var lastTime;
 
-    var tileImage;
+    var tileImage2;
     
     var selectedBlock = null;
     var lastMousePos = null;
@@ -22,49 +22,72 @@
 
     var board;
 
+    function board(boardHeight, boardWidth, tileHeight, tileWidth, numBlockColors) {
 
-    function block(type, column, row)
-    {
-        this.column = column;
-        this.row = row;
-        this.type = type;
-        this.selected = false;
-
-        this.description = function () {
-            return "Block type: " + this.type + " Position: " + this.row + "," + this.column + ".";
-        };
-
-        this.draw = function (context) { //relies on ctx, tileImage, TILE_WIDTH, TILE_HEIGHT
-            context.save();
-            if(this.selected == true) context.globalAlpha = 0.5;
-            context.drawImage(tileImage, this.type * TILE_WIDTH, 0, TILE_WIDTH, TILE_HEIGHT, this.column * TILE_WIDTH, this.row * TILE_HEIGHT, TILE_WIDTH, TILE_HEIGHT);
-            //format is ctx.drawImage(image, sx, sy, sWidth, sHeight, dx, dy, dWidth, dHeight);
-            context.restore();
-        };
-
-        this.select = function () {
-            this.selected = true;
-        };
-        
-        this.unselect = function () {
-            this.selected = false;
-        };        
-    }
-
-    function board2(boardHeight, boardWidth, tileHeight, tileWidth, tileImage) { //also relies on blockTypes, variable for how many types
         var self = this;
         //private properties
         var tileWidth = tileWidth;
         var tileHeight = tileHeight;
-        var tileImage = tileImage;
+        var tileImage;
 
         var numRows = boardHeight;
         var numColumns = boardWidth;
 
         var field = {};
 
-        var findHorizontalMatches  = function () {
+        function block(type, column, row) {
+            this.column = column;
+            this.row = row;
+            this.type = type;
+            this.selected = false;
 
+            this.description = function () {
+                return "Block type: " + this.type + " Position: " + this.row + "," + this.column + ".";
+            };
+
+            this.draw = function (context) { //relies on TILE_WIDTH, TILE_HEIGHT
+                context.save();
+                if (this.selected == true) context.globalAlpha = 0.5;
+                context.drawImage(tileImage, this.type * tileWidth, 0, tileWidth, tileHeight, this.column * tileWidth, this.row * tileHeight, tileWidth, tileHeight);
+                //format is ctx.drawImage(image, sx, sy, sWidth, sHeight, dx, dy, dWidth, dHeight);
+                context.restore();
+            };
+
+            this.drawSelected = function (context,x ,y) { //function to draw a block that's been selected, at x and y
+                context.save();
+                context.globalAlpha = 0.8;
+                context.drawImage(tileImage, selectedBlock.type * tileWidth, 0, tileWidth, tileHeight, x - tileWidth * TILE_SELECT_SIZE_MOD / 2, y - tileHeight * TILE_SELECT_SIZE_MOD / 2, tileWidth * TILE_SELECT_SIZE_MOD, tileHeight * TILE_SELECT_SIZE_MOD);
+                context.restore();
+            };
+
+            this.select = function () {
+                this.selected = true;
+            };
+
+            this.unselect = function () {
+                this.selected = false;
+            };
+        }
+
+        function chain() {
+            var _blocks = [];
+            this.addBlock = function (block) {
+                _blocks.push(block);
+            };
+            this.blocks = function () {
+                return _blocks;
+            };
+        };
+
+        var findHorizontalMatches  = function () {
+            var horizontalMatches = [];
+            for(var y = 0; y < numColumns; y++)
+            {
+                for(var x = 0; x < numRows; x++)
+                {
+
+                }
+            }
         };
 
         var shuffle = function () {
@@ -72,7 +95,7 @@
             for (var y = 0; y < numRows; y++) {
                 for (var x = 0; x < numColumns; x++) {
                     do {
-                        var blockType = Math.floor(Math.random() * blockTypes);
+                        var blockType = Math.floor(Math.random() * numBlockColors);
                     } while ((x >= 2 && blockType == field[y * numColumns + x - 1] && blockType == field[y * numColumns + x - 2])
                         || (y >= 2 && blockType == field[(y - 1) * numColumns + x] && blockType == field[(y - 2) * numColumns + x]));
                     field[y * numColumns + x] = new block((blockType), x, y);
@@ -84,13 +107,10 @@
         //public properties
         this.numRows = boardHeight;
         this.numColumns = boardWidth;
-        this.init = function () {
+        this.init = function (tileSpriteSheet) {
+            tileImage = tileSpriteSheet;
             field.length = this.numRows * this.numColumns;
             shuffle();
-            for(var i = 0; i < field.length; i++)
-            {
-                console.log(field[i]);
-            }
         };
 
         this.draw = function (context) {
@@ -157,26 +177,16 @@
 
     }
 
-    function drawBoard(context) //relies on ctx. this should be in board.... 
-    {
-        context.fillStyle = "#000";
-        context.fillRect(0, 0, board.numColumns * TILE_WIDTH, board.numRows * TILE_HEIGHT);
-        for(var i = 0; i < board.field.length; i++)
-        {
-            
-            board.field[i].draw(context);
-            //ctx.drawImage(image, sx, sy, sWidth, sHeight, dx, dy, dWidth, dHeight);
-        }
-    }
-
     function drawSelectedBlock() //this relies 
     {
         if(selectedBlock)
         {
-            ctx.save();
+            selectedBlock.drawSelected(ctx, lastMousePos.x, lastMousePos.y);
+            /*ctx.save();
             ctx.globalAlpha = 0.8;
-            ctx.drawImage(tileImage, selectedBlock.type * TILE_WIDTH, 0, TILE_WIDTH, TILE_HEIGHT, lastMousePos.x - TILE_WIDTH * TILE_SELECT_SIZE_MOD / 2, lastMousePos.y - TILE_HEIGHT * TILE_SELECT_SIZE_MOD / 2, TILE_WIDTH * TILE_SELECT_SIZE_MOD, TILE_HEIGHT * TILE_SELECT_SIZE_MOD)
+            ctx.drawImage(tileImage2, selectedBlock.type * TILE_WIDTH, 0, TILE_WIDTH, TILE_HEIGHT, lastMousePos.x - TILE_WIDTH * TILE_SELECT_SIZE_MOD / 2, lastMousePos.y - TILE_HEIGHT * TILE_SELECT_SIZE_MOD / 2, TILE_WIDTH * TILE_SELECT_SIZE_MOD, TILE_HEIGHT * TILE_SELECT_SIZE_MOD)
             ctx.restore();
+            */
         }
     }
 
@@ -217,10 +227,10 @@
         console.log("ran startGame()");
         if(window.resources.resourcesLoaded() == true)
         {   
-            tileImage = window.resources.images["tileImage"];
-            board = new board2(BOARD_HEIGHT, BOARD_WIDTH, TILE_HEIGHT, TILE_WIDTH, tileImage);
+            tileImage2 = window.resources.images["tileImage"];
+            board = new board(BOARD_HEIGHT, BOARD_WIDTH, TILE_HEIGHT, TILE_WIDTH, blockTypes);
             initCanvas();
-            board.init();
+            board.init(tileImage2);
             gameLoop();
         }
         else{
