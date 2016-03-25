@@ -1,7 +1,8 @@
 ﻿(function () {
+    //current constants for board and tile widths... 
+    //TODO: put this in a seperate file?
     var BOARD_HEIGHT = 5;
     var BOARD_WIDTH = 6;
-
     var TILE_HEIGHT = 40;
     var TILE_WIDTH = 40;
 
@@ -12,14 +13,14 @@
     var ctx;
     var lastTime;
 
-    var resourcesLoaded = false;
-
     var tileImage;
     
     var selectedBlock = null;
     var lastMousePos = null;
 
     var TILE_SELECT_SIZE_MOD = 1.3;
+
+    var board;
 
 
     function block(type, column, row)
@@ -33,12 +34,12 @@
             return "Block type: " + this.type + " Position: " + this.row + "," + this.column + ".";
         };
 
-        this.draw = function () { //relies on ctx, tileImage, TILE_WIDTH, TILE_HEIGHT
-            ctx.save();
-            if(this.selected == true) ctx.globalAlpha = 0.5;
-            ctx.drawImage(tileImage, this.type * TILE_WIDTH, 0, TILE_WIDTH, TILE_HEIGHT, this.column * TILE_WIDTH, this.row * TILE_HEIGHT, TILE_WIDTH, TILE_HEIGHT);
+        this.draw = function (context) { //relies on ctx, tileImage, TILE_WIDTH, TILE_HEIGHT
+            context.save();
+            if(this.selected == true) context.globalAlpha = 0.5;
+            context.drawImage(tileImage, this.type * TILE_WIDTH, 0, TILE_WIDTH, TILE_HEIGHT, this.column * TILE_WIDTH, this.row * TILE_HEIGHT, TILE_WIDTH, TILE_HEIGHT);
             //format is ctx.drawImage(image, sx, sy, sWidth, sHeight, dx, dy, dWidth, dHeight);
-            ctx.restore();
+            context.restore();
         };
 
         this.select = function () {
@@ -50,73 +51,65 @@
         };        
     }
 
-    function board2() {
-        
-    }
-    var board = { // relies on BOARD_HEIGHT, BOARD_WIDTH, TILE_WIDTH, TILE_HEIGHT
-        "numRows": BOARD_HEIGHT,
-        "numColumns": BOARD_WIDTH,
-        "field": [],
-        "shuffle": function () {
-            for(var y = 0; y < this.numRows; y++)
-            {
-                for(var x = 0; x < this.numColumns; x++)
-                {
-                    do{
-                        var blockType = Math.floor(Math.random()*blockTypes);
-                    }while((x >= 2 && blockType == this.field[y * this.numColumns + x - 1] && blockType == this.field[y * this.numColumns + x -2 ]) 
-                        || (y >= 2 && blockType == this.field[(y - 1)*this.numColumns + x] && blockType == this.field[(y - 2)*this.numColumns + x]));
-                    this.field[y * this.numColumns + x] = new block((blockType),x,y);
+    function board2(boardHeight, boardWidth, tileHeight, tileWidth, tileImage) {
+        var self = this;
+        //private properties
+        var tileWidth = tileWidth;
+        var tileHeight = tileHeight;
+        var tileImage = tileImage;
+
+        var field = {};
+        var shuffle = function () {
+            console.log("this.numRows:", self.numRows, "this.numColumns", self.numColumns, "this:", self);
+            for (var y = 0; y < self.numRows; y++) {
+                for (var x = 0; x < self.numColumns; x++) {
+                    do {
+                        var blockType = Math.floor(Math.random() * blockTypes);
+                    } while ((x >= 2 && blockType == field[y * self.numColumns + x - 1] && blockType == field[y * self.numColumns + x - 2])
+                        || (y >= 2 && blockType == field[(y - 1) * self.numColumns + x] && blockType == field[(y - 2) * self.numColumns + x]));
+                    field[y * self.numColumns + x] = new block((blockType), x, y);
+                    //console.log(field[y * self.numColumns + x], "field");
                 }
             }
-        },
-        "coordsToColRow": function (coords) {
-            //console.log(coords);
-            var col = Math.floor(coords.x / TILE_WIDTH);
-            var row = Math.floor(coords.y / TILE_HEIGHT);
-            if (row < 0)
+        };
+
+        //public properties
+        this.numRows = boardHeight;
+        this.numColumns = boardWidth;
+        this.init = function () {
+            field.length = this.numRows * this.numColumns;
+            shuffle();
+            for(var i = 0; i < field.length; i++)
             {
-                row = 0;
+                console.log(field[i]);
             }
-            else if (row >= this.numRows)
-            {
-                row = this.numRows - 1;
+        };
+
+        this.draw = function (context) {
+            context.fillStyle = "#000";
+            context.fillRect(0, 0, this.numColumns * TILE_WIDTH, this.numRows * TILE_HEIGHT);
+            for (var i = 0; i < field.length; i++) {
+
+                field[i].draw(context);
+                //ctx.drawImage(image, sx, sy, sWidth, sHeight, dx, dy, dWidth, dHeight);
             }
-            if (col < 0) {
-                col = 0;
+        };
+
+        this.getBlock = function (row, column) { //expects row and column, returns the block or null
+            if (column >= 0 && column < this.numColumns && row >= 0 && row >= 0 && row < this.numRows) {
+                return field[row * this.numColumns + column];
             }
-            else if (col >= this.numColumns)
-            {
-                col = this.numColumns - 1;
+            console.log("Row, column:", row, column, "=null");
+            return null;
+        };
+        this.setBlock = function (row, column, block) {
+            if (column >= 0 && column < this.numColumns && row >= 0 && row < this.numRows) {
+                field[row * this.numColumns + column] = block;
             }
-            //console.log(row, col);
-            return { "row": row, "col": col };
-            
-        },
-        "init": function () {
-            this.field.length = this.numRows * this.numColumns;
-            this.shuffle();
-            for(var i = 0; i < this.field.length; i++)
-            {
-                //console.log(this.field[i]);
-            }
-        },
-        "getBlock": function(row, column)
-        {
-            if(column >= 0 && column < this.numColumns && row >= 0 && row >= 0 && row < this.numRows)
-            {
-                return this.field[row*this.numColumns + column];
-            }
-        },
-        "setBlock": function(row, column, block)
-        {
-            if(column >= 0 && column < this.numColumns && row >= 0 && row < this.numRows)
-            {
-                this.field[row * this.numColumns + column] = block;
-            }
-        },
-        "swapBlocks": function(block1, block2)
-        {
+        };
+
+        this.swapBlocks = function (block1, block2) {
+            console.log("block1:", block1, "block2:", block2);
             var tempRow = block1.row;
             var tempCol = block1.column;
             block1.row = block2.row;
@@ -126,25 +119,42 @@
 
             this.setBlock(block1.row, block1.column, block1);
             this.setBlock(block2.row, block2.column, block2);
-        }
-    };
+        };
+
+        this.mouseToBlockCoords = function (coords) { // Expects x and y properties. Returns object with row and column properties
+            var col = Math.floor(coords.x / tileWidth);
+            var row = Math.floor(coords.y / tileHeight);
+            if (row < 0) {
+                row = 0;
+            }
+            else if (row >= this.numRows) {
+                row = this.numRows - 1;
+            }
+            if (col < 0) {
+                col = 0;
+            }
+            else if (col >= this.numColumns) {
+                col = this.numColumns - 1;
+            }
+            return { "row": row, "column": col };
+        };
+    }
 
     function solveBoard()
     {
 
     }
 
-    function drawBoard() //relies on ctx. this should be in board.... 
+    function drawBoard(context) //relies on ctx. this should be in board.... 
     {
-        ctx.fillStyle = "#000";
-        ctx.fillRect(0, 0, board.numColumns * TILE_WIDTH, board.numRows * TILE_HEIGHT);
+        context.fillStyle = "#000";
+        context.fillRect(0, 0, board.numColumns * TILE_WIDTH, board.numRows * TILE_HEIGHT);
         for(var i = 0; i < board.field.length; i++)
         {
             
-            board.field[i].draw();
+            board.field[i].draw(context);
             //ctx.drawImage(image, sx, sy, sWidth, sHeight, dx, dy, dWidth, dHeight);
         }
-        //ctx.drawImage(tileImage,0,0);
     }
 
     function drawSelectedBlock() //this relies 
@@ -160,7 +170,8 @@
 
     function render() // this relies on board and drawselected block
     {
-        drawBoard();
+        //drawBoard(ctx);
+        board.draw(ctx);
         drawSelectedBlock();
     }
 
@@ -168,11 +179,11 @@
     {
         if(selectedBlock)
         {
-            var coords = board.coordsToColRow(lastMousePos);
-            if(coords.row != selectedBlock.row || coords.col != selectedBlock.column)
+            var coords = board.mouseToBlockCoords(lastMousePos);
+            if(coords.row != selectedBlock.row || coords.column != selectedBlock.column)
             {
                 console.log("over a dif block", coords);
-                board.swapBlocks(selectedBlock, board.getBlock(coords.row, coords.col));
+                board.swapBlocks(selectedBlock, board.getBlock(coords.row, coords.column));
             }
         }
     }
@@ -189,19 +200,15 @@
         requestAnimationFrame(gameLoop);
     }
 
-    function initBoard()
-    {
-        fillRandomBoard();
-    }
-
-    
-
     function startGame()
     {
         console.log("ran startGame()");
         if(window.resources.resourcesLoaded() == true)
-        {
+        {   
             tileImage = window.resources.images["tileImage"];
+            board = new board2(BOARD_HEIGHT, BOARD_WIDTH, TILE_HEIGHT, TILE_WIDTH, tileImage);
+            initCanvas();
+            board.init();
             gameLoop();
         }
         else{
@@ -231,10 +238,10 @@
         lastMousePos = mouse;
         //var row = Math.floor(mouse.y / TILE_HEIGHT);
         //var col = Math.floor(mouse.x / TILE_WIDTH);
-        var pos = board.coordsToColRow(mouse);
-        selectedBlock = board.getBlock(pos.row, pos.col);
+        var pos = board.mouseToBlockCoords(mouse);
+        selectedBlock = board.getBlock(pos.row, pos.column);
         selectedBlock.select();
-        console.log(selectedBlock);
+        console.log(selectedBlock.description());
     }
 
     function onMouseUp(e)
@@ -260,19 +267,24 @@
     {
         window.resources.loadResources();
 
+        
+
         canvasInfo = this.canvasInfo;
         canvas = canvasInfo.canvas;
         ctx = canvasInfo.ctx;
 
         lastTime = this.lastTime;
 
-        initCanvas();
+        
 
-        board.init();
-        console.log(typeof (tileImage));
         startGame();
     }
 
-    var game = { "init": init };
-    window.puzzmatch = game;
+   // var game = { "init": init };
+    //window.puzzmatch = game;
+    if(window.puzzmatch == null || typeof window.puzzmatch !== 'object')
+    {
+        window.puzzmatch = {};
+    }
+    window.puzzmatch.init = init;
 })();

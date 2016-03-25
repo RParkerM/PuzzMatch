@@ -37,7 +37,7 @@
         
         var canvasInfo = initializeGameCanvas();
         var game = { "init": RPMPong.init, "canvasInfo": canvasInfo, "lastTime": Date.now() };
-        //game.init = puzzmatch.init;
+        game.init = puzzmatch.init;
         game.init();
     }
     

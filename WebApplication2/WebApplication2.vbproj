@@ -87,6 +87,7 @@
     <Content Include="main.js" />
     <Content Include="PongGame.js" />
     <Content Include="PuzzleMatch.js" />
+    <Content Include="PuzzleObjects.js" />
     <Content Include="resources.js" />
     <Content Include="Web.config" />
   </ItemGroup>
