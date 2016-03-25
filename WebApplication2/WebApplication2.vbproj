@@ -85,6 +85,7 @@
   <ItemGroup>
     <Content Include="index.html" />
     <Content Include="main.js" />
+    <Content Include="PuzzleConstants.js" />
     <Content Include="PuzzleMatch.js" />
     <Content Include="PuzzleObjects.js" />
     <Content Include="resources.js" />

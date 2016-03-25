@@ -1,6 +1,8 @@
 ﻿(function () {
 
-    function board(boardHeight, boardWidth, tileHeight, tileWidth, numBlockColors) {
+    var TILE_SELECT_SIZE_MOD = puzzmatch.constants.TILE_SELECT_SIZE_MOD;
+
+    function Board(boardHeight, boardWidth, tileHeight, tileWidth, numBlockColors) {
 
         var self = this;
         //private properties
@@ -34,7 +36,7 @@
             this.drawSelected = function (context, x, y) { //function to draw a block that's been selected, at x and y
                 context.save();
                 context.globalAlpha = 0.8;
-                context.drawImage(tileImage, selectedBlock.type * tileWidth, 0, tileWidth, tileHeight, x - tileWidth * TILE_SELECT_SIZE_MOD / 2, y - tileHeight * TILE_SELECT_SIZE_MOD / 2, tileWidth * TILE_SELECT_SIZE_MOD, tileHeight * TILE_SELECT_SIZE_MOD);
+                context.drawImage(tileImage, this.type * tileWidth, 0, tileWidth, tileHeight, x - tileWidth * TILE_SELECT_SIZE_MOD / 2, y - tileHeight * TILE_SELECT_SIZE_MOD / 2, tileWidth * TILE_SELECT_SIZE_MOD, tileHeight * TILE_SELECT_SIZE_MOD);
                 context.restore();
             };
 
@@ -91,7 +93,7 @@
 
         this.draw = function (context) {
             context.fillStyle = "#000";
-            context.fillRect(0, 0, this.numColumns * TILE_WIDTH, this.numRows * TILE_HEIGHT);
+            context.fillRect(0, 0, this.numColumns * tileWidth, this.numRows * tileHeight);
             for (var i = 0; i < field.length; i++) {
 
                 field[i].draw(context);
@@ -150,12 +152,12 @@
 
 
 
-    var objects = { "board": board };
+    var Objects = { "Board": Board };
 
     if (window.puzzmatch == null || typeof window.puzzmatch !== 'object') {
         window.puzzmatch = {};
     }
-    window.puzzmatch.Objects = objects;
+    window.puzzmatch.Objects = Objects;
 
 
 })();
