@@ -1,6 +1,6 @@
 ﻿(function () {
 
-    var TILE_SELECT_SIZE_MOD = puzzmatch.constants.TILE_SELECT_SIZE_MOD;
+    var TILE_SELECT_SIZE_MOD = puzzmatch.Constants.TILE_SELECT_SIZE_MOD;
 
     function Board(boardHeight, boardWidth, tileHeight, tileWidth, numBlockColors) {
 
@@ -82,13 +82,21 @@
             }
         };
 
-        //public properties
+        ///public properties
+
         this.numRows = boardHeight;
         this.numColumns = boardWidth;
         this.init = function (tileSpriteSheet) {
             tileImage = tileSpriteSheet;
             field.length = this.numRows * this.numColumns;
             shuffle();
+        };
+
+        this.getHeight = function () {
+            return this.numRows * tileHeight;
+        };
+        this.getWidth = function () {
+            return this.numColumns * tileWidth;
         };
 
         this.draw = function (context) {
@@ -113,7 +121,6 @@
                 field[row * this.numColumns + column] = block;
             }
         };
-
         this.swapBlocks = function (block1, block2) {
             console.log("block1:", block1, "block2:", block2);
             var tempRow = block1.row;

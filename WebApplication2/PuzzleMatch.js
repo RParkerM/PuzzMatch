@@ -1,6 +1,7 @@
 ﻿(function () {
 
     var Objects = puzzmatch.Objects; //module for objects
+    var Constants = puzzmatch.Constants; //module for constants
 
     //current constants for board and tile widths... 
     //TODO: put this in a seperate file?
@@ -75,7 +76,6 @@
         if(window.resources.resourcesLoaded() == true)
         {   
             tileImage2 = window.resources.images["tileImage"];
-            //board2 = new Board(BOARD_HEIGHT, BOARD_WIDTH, TILE_HEIGHT, TILE_WIDTH, blockTypes);
             board = new Objects.Board(BOARD_HEIGHT, BOARD_WIDTH, TILE_HEIGHT, TILE_WIDTH, blockTypes);
             console.log(board);
             initCanvas(canvas);
@@ -107,8 +107,6 @@
         console.log(e);
         var mouse = getMousePos(canvas, e);
         lastMousePos = mouse;
-        //var row = Math.floor(mouse.y / TILE_HEIGHT);
-        //var col = Math.floor(mouse.x / TILE_WIDTH);
         var pos = board.mouseToBlockCoords(mouse);
         selectedBlock = board.getBlock(pos.row, pos.column);
         selectedBlock.select();
@@ -130,8 +128,8 @@
         window.onmouseup = onMouseUp;
         window.onmousemove = onMouseMove;
 
-        gameCanvas.width = TILE_WIDTH * board.numColumns;
-        gameCanvas.height = TILE_HEIGHT * board.numRows;
+        gameCanvas.width = board.getWidth();
+        gameCanvas.height = board.getHeight();
     }
 
     function init()
@@ -147,8 +145,6 @@
         startGame();
     }
 
-   // var game = { "init": init };
-    //window.puzzmatch = game;
     if(window.puzzmatch == null || typeof window.puzzmatch !== 'object')
     {
         window.puzzmatch = {};
