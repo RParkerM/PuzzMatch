@@ -2,6 +2,18 @@
 
     var TILE_SELECT_SIZE_MOD = puzzmatch.Constants.TILE_SELECT_SIZE_MOD;
 
+    function mergeAndFlatten(array1, array2) {
+        var array = array1.concat(array2);
+
+    }
+
+    function hasDuplicates(sourceArray, targetArray) {
+        console.log(targetArray);
+        return targetArray.some(function (v) {
+            return sourceArray.indexOf(v) >= 0;
+        });
+    }
+
     function Board(boardHeight, boardWidth, tileHeight, tileWidth, numBlockColors) {
 
         var self = this;
@@ -49,27 +61,80 @@
             };
         }
 
-        function chain() {
+        function Chain() {
             var _blocks = [];
+            var _blockType; //color of blocks inside this chain
+
+            this.isRow = false; //means it is a continous chain from the left side of the board to the right
+
             this.addBlock = function (block) {
                 _blocks.push(block);
+                _blockType = block.type;
             };
+
             this.blocks = function () {
                 return _blocks;
             };
-        };
+
+            this.setBlocks = function (newBlocks) {
+                _blocks = newBlocks.filter(function (v, i, arr) {
+                    return i == arr.indexOf(v);
+                });
+                
+            };
+
+            this.length = function () {
+                return _blocks.length;
+            }
+        }
 
         var findHorizontalMatches = function () {
             var horizontalMatches = [];
-            for (var y = 0; y < numColumns; y++) {
-                for (var x = 0; x < numRows; x++) {
-
+            for (var y = 0; y < numRows; y++) {
+                for (var x = 0; x < numColumns - 2;) {
+                    var blockType = self.getBlock(y, x).type;
+                    if (self.getBlock(y, x + 1).type == blockType && self.getBlock(y, x + 2).type == blockType) {
+                        var newChain = new Chain();
+                        do {
+                            newChain.addBlock(self.getBlock(y, x));
+                            x += 1;
+                        } while (x < numColumns && self.getBlock(y, x).type == blockType)
+                        if (newChain.length() == numColumns)
+                        {
+                            newChain.isRow = true;
+                        }
+                        horizontalMatches.push(newChain);
+                        continue;
+                    }
+                    x++;
                 }
             }
+            return horizontalMatches;
+        };
+        var findVerticalMatches = function () {
+            var verticalMatches = [];
+            for(var x = 0; x < numColumns; x++)
+            {
+                for(var y = 0; y < numRows - 2;)
+                {
+                    var blockType = self.getBlock(y, x).type;
+                    if (self.getBlock(y + 1, x).type == blockType && self.getBlock(y + 2, x).type == blockType) {
+                        var newChain = new Chain();
+                        do {
+                            newChain.addBlock(self.getBlock(y, x));
+                            y += 1;
+                        } while (y < numRows && self.getBlock(y, x).type == blockType)
+                        verticalMatches.push(newChain);
+                        continue;
+                    }
+                    y++;
+                }
+            }
+            return verticalMatches; 
         };
 
         var shuffle = function () {
-            console.log("this.numRows:", numRows, "this.numColumns", numColumns, "this:", self);
+            //console.log("this.numRows:", numRows, "this.numColumns", numColumns, "this:", self);
             for (var y = 0; y < numRows; y++) {
                 for (var x = 0; x < numColumns; x++) {
                     do {
@@ -113,7 +178,7 @@
             if (column >= 0 && column < this.numColumns && row >= 0 && row >= 0 && row < this.numRows) {
                 return field[row * this.numColumns + column];
             }
-            console.log("Row, column:", row, column, "=null");
+            //console.log("Row, column:", row, column, "=null");
             return null;
         };
         this.setBlock = function (row, column, block) {
@@ -122,7 +187,6 @@
             }
         };
         this.swapBlocks = function (block1, block2) {
-            console.log("block1:", block1, "block2:", block2);
             var tempRow = block1.row;
             var tempCol = block1.column;
             block1.row = block2.row;
@@ -135,7 +199,33 @@
         };
 
         this.solveBoard = function () {
-
+            //console.log(findHorizontalMatches());
+            var chains = findHorizontalMatches();
+            chains = chains.concat(findVerticalMatches());
+            //console.log(findVerticalMatches());
+            chains = chains.filter(function (v, i, arr) {
+                if(i >= arr.length -1){
+                    return true;
+                }
+                for (j = i + 1; j < arr.length; j++) {
+                    if(hasDuplicates(v.blocks(), arr[j].blocks()))
+                    {
+                        console.log("arrays have dupes...?")
+                        arr[j].setBlocks((arr[j].blocks().concat(v.blocks())));
+                        arr[j].isRow = arr[j].isRow || v.isRow;
+                        return false;
+                    }
+                }
+                return true;
+                console.log("didn't return anything.")
+                
+            });
+            for (i = 0; i < chains.length; i++)
+            {
+                var str = "is not a row";
+                if (chains[i].isRow) str = "is a row";
+                console.log("Chain[",i,"]:",chains[i].blocks(), str);
+            }
         };
 
         this.mouseToBlockCoords = function (coords) { // Expects x and y properties. Returns object with row and column properties

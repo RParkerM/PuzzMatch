@@ -8,7 +8,8 @@
 
     var BLOCK_TYPES = 6;
 
-    var Constants = { "TILE_SELECT_SIZE_MOD": TILE_SELECT_SIZE_MOD };
+    var Constants = {};
+    Constants.TILE_SELECT_SIZE_MOD = TILE_SELECT_SIZE_MOD;
     Constants.BOARD_HEIGHT = BOARD_HEIGHT;
     Constants.BOARD_WIDTH = BOARD_WIDTH;
     Constants.TILE_HEIGHT = TILE_HEIGHT;

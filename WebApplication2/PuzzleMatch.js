@@ -6,12 +6,12 @@
     //current constants for board and tile widths... 
     //TODO: put this in a seperate file?
 
-    var BOARD_HEIGHT = 5;
-    var BOARD_WIDTH = 6;
-    var TILE_HEIGHT = 40;
-    var TILE_WIDTH = 40;
+    var BOARD_HEIGHT = Constants.BOARD_HEIGHT;
+    var BOARD_WIDTH = Constants.BOARD_WIDTH;
+    var TILE_HEIGHT = Constants.TILE_HEIGHT;
+    var TILE_WIDTH = Constants.TILE_WIDTH;
 
-    var blockTypes = 6;
+    var BLOCK_TYPES = Constants.BLOCK_TYPES;
 
     var canvasInfo;
     var canvas;
@@ -52,7 +52,7 @@
             var coords = board.mouseToBlockCoords(lastMousePos);
             if(coords.row != selectedBlock.row || coords.column != selectedBlock.column)
             {
-                console.log("over a dif block", coords);
+               // console.log("over a dif block", coords);
                 board.swapBlocks(selectedBlock, board.getBlock(coords.row, coords.column));
             }
         }
@@ -76,7 +76,7 @@
         if(window.resources.resourcesLoaded() == true)
         {   
             tileImage2 = window.resources.images["tileImage"];
-            board = new Objects.Board(BOARD_HEIGHT, BOARD_WIDTH, TILE_HEIGHT, TILE_WIDTH, blockTypes);
+            board = new Objects.Board(BOARD_HEIGHT, BOARD_WIDTH, TILE_HEIGHT, TILE_WIDTH, BLOCK_TYPES);
             console.log(board);
             initCanvas(canvas);
             board.init(tileImage2);
@@ -119,6 +119,7 @@
         {
             selectedBlock.unselect();
             selectedBlock = null;
+            board.solveBoard();
         }
     }
 
