@@ -93,7 +93,15 @@
             "y": evt.clientY - rect.top
         };
     }
-    
+    function getTouchPos(canvas, evt) {
+        var rect = canvas.getBoundingClientRect();
+        return {
+            "x": evt.touches[0].clientX - rect.left,
+            "y": evt.touches[0].clientY - rect.top
+        }
+    }
+
+    /// MOUSE FUNCTIONS
     function onMouseMove(e)
     {
         var mouse = getMousePos(canvas, e);
@@ -102,7 +110,6 @@
 
     function onMouseDown(e)
     {
-        console.log(e);
         var mouse = getMousePos(canvas, e);
         lastMousePos = mouse;
         var pos = board.mouseToBlockCoords(mouse);
@@ -111,8 +118,7 @@
         console.log(selectedBlock.description());
     }
 
-    function onMouseUp(e)
-    {
+    function onMouseUp(e){
         if (selectedBlock)
         {
             selectedBlock.unselect();
@@ -121,15 +127,40 @@
         }
     }
 
+    function onTouchStart(e) {
+        e.preventDefault();
+        var touchPos = getTouchPos(canvas, e);
+        lastMousePos = touchPos;
+        var pos = board.mouseToBlockCoords(touchPos);
+        selectedBlock = board.getBlock(pos.row, pos.column);
+        selectedBlock.select();
+        console.log(selectedBlock.description());
+    }
+    function onTouchEnd(e) {
+        e.preventDefault();
+        if (selectedBlock) {
+            selectedBlock.unselect();
+            selectedBlock = null;
+            board.solveBoard();
+        }
+    }
+    function onTouchMove(e) {
+        e.preventDefault();
+        var touchPos = getTouchPos(canvas, e);
+        lastMousePos = touchPos;
+    }
+
     function initCanvas(gameCanvas)
     {
         gameCanvas.onmousedown = onMouseDown;
         window.onmouseup = onMouseUp;
         window.onmousemove = onMouseMove;
 
-        window.ontouchstart = onMouseDown;
-        window.ontouchend = onMouseUp;
-        window.ontouchmove = onMouseMove;
+        gameCanvas.addEventListener("touchstart", onTouchStart);
+        window.addEventListener("touchmove", onTouchMove);
+        window.addEventListener("touchend", onTouchEnd);
+        window.ontouchend = onTouchEnd;
+        window.ontouchmove = onTouchMove;
 
         gameCanvas.width = board.getWidth();
         gameCanvas.height = board.getHeight();
