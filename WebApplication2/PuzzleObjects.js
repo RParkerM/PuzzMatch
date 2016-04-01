@@ -33,11 +33,16 @@
             this.type = type;
             this.selected = false;
 
+            this.clone = function () {
+                return new block(this.type, this.column, this.row);
+            };
+
             this.description = function () {
                 return "Block type: " + this.type + " Position: " + this.row + "," + this.column + ".";
             };
 
             this.draw = function (context) {
+                if (this.type == -1) return;
                 context.save();
                 if (this.selected == true) context.globalAlpha = 0.5;
                 context.drawImage(tileImage, this.type * tileWidth, 0, tileWidth, tileHeight, this.column * tileWidth, this.row * tileHeight, tileWidth, tileHeight);
@@ -74,6 +79,12 @@
 
             this.blocks = function () {
                 return _blocks;
+            };
+
+            this.clear = function () {
+                for (var i = 0; i < _blocks.length; i++) {
+                    _blocks[i].type = -1;
+                }
             };
 
             this.setBlocks = function (newBlocks) {
@@ -199,10 +210,8 @@
         };
 
         this.solveBoard = function () {
-            //console.log(findHorizontalMatches());
             var chains = findHorizontalMatches();
             chains = chains.concat(findVerticalMatches());
-            //console.log(findVerticalMatches());
             chains = chains.filter(function (v, i, arr) {
                 if(i >= arr.length -1){
                     return true;
@@ -219,12 +228,13 @@
                 return true;
                 console.log("didn't return anything.")
                 
-            });
+            });  //this just combines the chains. kinda of hacky, TODO fix this
             for (i = 0; i < chains.length; i++)
             {
                 var str = "is not a row";
                 if (chains[i].isRow) str = "is a row";
-                console.log("Chain[",i,"]:",chains[i].blocks(), str);
+                console.log("Chain[", i, "]:", chains[i].blocks(), str);
+                chains[i].clear();
             }
         };
 
