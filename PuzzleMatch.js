@@ -30,10 +30,12 @@
 
     }
 
-    function drawSelectedBlock() //this relies 
+    function drawSelectedBlock() //this relies  on ctx, lastMousPos
     {
+        
         if(selectedBlock)
         {
+            console.log("selectedBlock",selectedBlock,"positions:",lastMousePos);
             selectedBlock.drawSelected(ctx, lastMousePos.x, lastMousePos.y);
         }
     }
@@ -75,7 +77,6 @@
         {   
             tileImage2 = window.resources.images["tileImage"];
             board = new Objects.Board(BOARD_HEIGHT, BOARD_WIDTH, TILE_HEIGHT, TILE_WIDTH, BLOCK_TYPES);
-            console.log(board);
             initCanvas(canvas);
             board.init(tileImage2);
             gameLoop();
