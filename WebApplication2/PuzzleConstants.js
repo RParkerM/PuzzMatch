@@ -6,7 +6,7 @@
     var TILE_HEIGHT = 40;
     var TILE_WIDTH = 40;
 
-    var BLOCK_TYPES = 6;
+    var BLOCK_TYPES = 2;
 
     var Constants = {};
     Constants.TILE_SELECT_SIZE_MOD = TILE_SELECT_SIZE_MOD;

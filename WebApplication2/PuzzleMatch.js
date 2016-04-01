@@ -50,9 +50,8 @@
         if(selectedBlock)
         {
             var coords = board.mouseToBlockCoords(lastMousePos);
-            if(coords.row != selectedBlock.row || coords.column != selectedBlock.column)
+            if(coords.row != selectedBlock.row || coords.column != selectedBlock.column) //
             {
-               // console.log("over a dif block", coords);
                 board.swapBlocks(selectedBlock, board.getBlock(coords.row, coords.column));
             }
         }
@@ -70,9 +69,8 @@
         requestAnimationFrame(gameLoop);
     }
 
-    function startGame()
+    function startGame() //this tries to start the game, but waits until all resources are loaded
     {
-        console.log("ran startGame()");
         if(window.resources.resourcesLoaded() == true)
         {   
             tileImage2 = window.resources.images["tileImage"];

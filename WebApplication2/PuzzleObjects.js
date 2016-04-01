@@ -2,17 +2,21 @@
 
     var TILE_SELECT_SIZE_MOD = puzzmatch.Constants.TILE_SELECT_SIZE_MOD;
 
-    function mergeAndFlatten(array1, array2) {
-        var array = array1.concat(array2);
-
-    }
-
-    function hasDuplicates(sourceArray, targetArray) {
-        console.log(targetArray);
+    function doChainsHaveDuplicates(sourceChain, targetChain) { //this checks to see if chains should merge
+        var sourceArray = sourceChain.blocks();
+        var targetArray = targetChain.blocks();
         return targetArray.some(function (v) {
-            return sourceArray.indexOf(v) >= 0;
+            if (sourceArray.indexOf(v) >= 0){
+                return true;
+            } else if (sourceChain.blockType == targetChain.blockType) {
+                return sourceChain.getBlock(v.row - 1, v.column) != undefined || sourceChain.getBlock(v.row + 1, v.column) != undefined
+            } else {
+                return false;
+            }
         });
     }
+
+
 
     function Board(boardHeight, boardWidth, tileHeight, tileWidth, numBlockColors) {
 
@@ -25,8 +29,9 @@
         var numRows = boardHeight;
         var numColumns = boardWidth;
 
-        var field = {}; //contains the board state
+        var field = []; //contains the board state
 
+        ///Objects
         function block(type, column, row) {
             this.column = column;
             this.row = row;
@@ -64,17 +69,17 @@
             this.unselect = function () {
                 this.selected = false;
             };
-        }
+        } 
 
         function Chain() {
             var _blocks = [];
-            var _blockType; //color of blocks inside this chain
+            this.blockType = -1; //color of blocks inside this chain
 
             this.isRow = false; //means it is a continous chain from the left side of the board to the right
 
             this.addBlock = function (block) {
                 _blocks.push(block);
-                _blockType = block.type;
+                this.blockType = block.type;
             };
 
             this.blocks = function () {
@@ -87,7 +92,16 @@
                 }
             };
 
-            this.setBlocks = function (newBlocks) {
+            this.getBlock = function(row, column){
+                for (var i = 0; i < _blocks.length; i++) {
+                    if (_blocks[i].row == row && _blocks[i].column == column) {
+                        return _blocks[i];
+                    }
+                }
+                return undefined;
+            }
+
+            this.setBlocks = function (newBlocks) { // sets blocks but removes dupes
                 _blocks = newBlocks.filter(function (v, i, arr) {
                     return i == arr.indexOf(v);
                 });
@@ -97,8 +111,13 @@
             this.length = function () {
                 return _blocks.length;
             }
+        } //chain object
+
+        function matchAnimation() {
+
         }
 
+        ///functions
         var findHorizontalMatches = function () {
             var horizontalMatches = [];
             for (var y = 0; y < numRows; y++) {
@@ -216,8 +235,8 @@
                 if(i >= arr.length -1){
                     return true;
                 }
-                for (j = i + 1; j < arr.length; j++) {
-                    if(hasDuplicates(v.blocks(), arr[j].blocks()))
+                for (j = i+1; j < arr.length; j++) {
+                    if(doChainsHaveDuplicates(v, arr[j]))
                     {
                         console.log("arrays have dupes...?")
                         arr[j].setBlocks((arr[j].blocks().concat(v.blocks())));
