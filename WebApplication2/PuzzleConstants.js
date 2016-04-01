@@ -6,8 +6,11 @@
     var TILE_HEIGHT = 40;
     var TILE_WIDTH = 40;
 
-    var BLOCK_TYPES = 2;
+    var BLOCK_TYPES = 6;
+    
 
+
+    //this is everything that will go in the Constants namespace
     var Constants = {};
     Constants.TILE_SELECT_SIZE_MOD = TILE_SELECT_SIZE_MOD;
     Constants.BOARD_HEIGHT = BOARD_HEIGHT;

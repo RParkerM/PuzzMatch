@@ -16,7 +16,9 @@
         });
     }
 
-
+    function secondsToMilliseconds(seconds){
+        return seconds*1000;
+    }
 
     function Board(boardHeight, boardWidth, tileHeight, tileWidth, numBlockColors) {
 
@@ -30,6 +32,8 @@
         var numColumns = boardWidth;
 
         var field = []; //contains the board state
+        var matchAnimations = []; //contains array of matchAnimations
+
 
         ///Objects
         function block(type, column, row) {
@@ -113,8 +117,35 @@
             }
         } //chain object
 
-        function matchAnimation() {
+        function matchAnimation(chain, timestart, duration) {
+            if (duration == undefined) { duration = 250; }
+            var blockType = chain.blockType;
+            var animChain = [];
+            var timestart = timestart;
+            var duration = duration;
 
+            for (var i = 0; i < chain.length(); i++){
+                animChain.push(chain.blocks()[i].clone());
+            }
+
+            this.draw = function (ctx, time) {
+                
+                if (time < timestart + duration) {
+                    //console.log("draw anim", (timestart-time+duration)/duration, duration);
+                    ctx.save();
+                    var alpha = Math.min((timestart-time+duration) / duration, 1);
+                    ctx.globalAlpha = alpha;
+                    for (var i = 0; i < animChain.length; i++) {
+                        animChain[i].draw(ctx);
+                    }
+                    //console.log(animChain);
+                    ctx.restore();
+                }
+            }
+
+            this.animationComplete = function () { //something to check if the animation is complete, so we can remove it
+
+            }
         }
 
         ///functions
@@ -197,10 +228,13 @@
         this.draw = function (context) {
             context.fillStyle = "#000";
             context.fillRect(0, 0, this.numColumns * tileWidth, this.numRows * tileHeight);
+            var now = Date.now();
             for (var i = 0; i < field.length; i++) {
 
                 field[i].draw(context);
-                //ctx.drawImage(image, sx, sy, sWidth, sHeight, dx, dy, dWidth, dHeight);
+            }
+            for(var i = 0; i < matchAnimations.length; i++){
+                matchAnimations[i].draw(context, now);
             }
         };
 
@@ -238,14 +272,13 @@
                 for (j = i+1; j < arr.length; j++) {
                     if(doChainsHaveDuplicates(v, arr[j]))
                     {
-                        console.log("arrays have dupes...?")
+                        //console.log("arrays have dupes...?")
                         arr[j].setBlocks((arr[j].blocks().concat(v.blocks())));
                         arr[j].isRow = arr[j].isRow || v.isRow;
                         return false;
                     }
                 }
                 return true;
-                console.log("didn't return anything.")
                 
             });  //this just combines the chains. kinda of hacky, TODO fix this
             for (i = 0; i < chains.length; i++)
@@ -253,6 +286,7 @@
                 var str = "is not a row";
                 if (chains[i].isRow) str = "is a row";
                 console.log("Chain[", i, "]:", chains[i].blocks(), str);
+                matchAnimations.push(new matchAnimation(chains[i],Date.now()+i*250));
                 chains[i].clear();
             }
         };
