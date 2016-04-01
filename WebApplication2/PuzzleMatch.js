@@ -127,6 +127,10 @@
         window.onmouseup = onMouseUp;
         window.onmousemove = onMouseMove;
 
+        window.ontouchstart = onMouseDown;
+        window.ontouchend = onMouseUp;
+        window.ontouchmove = onMouseMove;
+
         gameCanvas.width = board.getWidth();
         gameCanvas.height = board.getHeight();
     }
