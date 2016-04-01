@@ -6,7 +6,7 @@
     var TILE_HEIGHT = 40;
     var TILE_WIDTH = 40;
 
-    var BLOCK_TYPES = 2;
+    var BLOCK_TYPES = 6;
     
 
 
