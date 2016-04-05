@@ -28,10 +28,6 @@
 
     var board;
 
-    function solveBoard()
-    {
-
-    }
 
     function drawSelectedBlock() //this relies  on ctx, lastMousPos
     {
