@@ -13,6 +13,9 @@
 
     var BLOCK_TYPES = Constants.BLOCK_TYPES;
 
+    var SCALE_X = 3;
+    var SCALE_Y = 3;
+
     var canvasInfo;
     var canvas;
     var ctx;
@@ -30,17 +33,27 @@
 
     }
 
-    function drawSelectedBlock() //this relies 
+    function drawSelectedBlock() //this relies  on ctx, lastMousPos
     {
+        
         if(selectedBlock)
         {
-            selectedBlock.drawSelected(ctx, lastMousePos.x, lastMousePos.y);
+            var x = Math.min(lastMousePos.x, canvas.width/SCALE_X);// - TILE_WIDTH/2 * SCALE_X);
+            var y = Math.min(lastMousePos.y, canvas.height/SCALE_Y);// - TILE_HEIGHT / 2 * SCALE_Y);
+            x = Math.max(0, x);
+            y = Math.max(0, y);
+            console.log("selectedBlock", selectedBlock, "positions:", { "x": x, "y": y }, "canvas dimensions", { "width": canvas.width, "height": canvas.height });
+            selectedBlock.drawSelected(ctx, x, y);
         }
+    }
+
+    function drawBackground(context) {
+        context.clearRect(0, 0, canvas.width, canvas.height);
     }
 
     function render() // this relies on board and drawselected block
     {
-        //drawBoard(ctx);
+        drawBackground(ctx);
         board.draw(ctx);
         drawSelectedBlock();
     }
@@ -75,7 +88,6 @@
         {   
             tileImage2 = window.resources.images["tileImage"];
             board = new Objects.Board(BOARD_HEIGHT, BOARD_WIDTH, TILE_HEIGHT, TILE_WIDTH, BLOCK_TYPES);
-            console.log(board);
             initCanvas(canvas);
             board.init(tileImage2);
             gameLoop();
@@ -89,15 +101,15 @@
     {
         var rect = canvas.getBoundingClientRect();
         return {
-            "x": evt.clientX - rect.left,
-            "y": evt.clientY - rect.top
+            "x": (evt.clientX - rect.left)/SCALE_X,
+            "y": (evt.clientY - rect.top)/SCALE_Y
         };
     }
     function getTouchPos(canvas, evt) {
         var rect = canvas.getBoundingClientRect();
         return {
-            "x": evt.touches[0].clientX - rect.left,
-            "y": evt.touches[0].clientY - rect.top
+            "x": (evt.touches[0].clientX - rect.left)/SCALE_X,
+            "y": (evt.touches[0].clientY - rect.top)/SCALE_Y
         }
     }
 
@@ -137,7 +149,7 @@
         console.log(selectedBlock.description());
     }
     function onTouchEnd(e) {
-        e.preventDefault();
+       e.preventDefault();
         if (selectedBlock) {
             selectedBlock.unselect();
             selectedBlock = null;
@@ -162,8 +174,9 @@
         window.ontouchend = onTouchEnd;
         window.ontouchmove = onTouchMove;
 
-        gameCanvas.width = board.getWidth();
-        gameCanvas.height = board.getHeight();
+        gameCanvas.width = board.getWidth() * SCALE_X;
+        gameCanvas.height = board.getHeight() * SCALE_Y;
+        gameCanvas.getContext('2d').scale(SCALE_X, SCALE_Y);
     }
 
     function init()
@@ -175,6 +188,7 @@
         ctx = canvasInfo.ctx;
 
         lastTime = this.lastTime;
+
 
         startGame();
     }

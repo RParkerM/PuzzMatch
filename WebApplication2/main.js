@@ -19,8 +19,10 @@
         
         var canvasInfo = initializeGameCanvas();
         var game = { "init": puzzmatch.init, "canvasInfo": canvasInfo, "lastTime": Date.now() };
+        window.GAMEOBJECT = game;
         game.init();
     }
+    
     
     window.onload = (function (oldOnLoad) { return function () { oldOnLoad && oldOnLoad(); main(); } })(window.onload);
 })();
