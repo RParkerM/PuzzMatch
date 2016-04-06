@@ -198,10 +198,13 @@
             //console.log("this.numRows:", numRows, "this.numColumns", numColumns, "this:", self);
             for (var y = 0; y < numRows; y++) {
                 for (var x = 0; x < numColumns; x++) {
+                    var failed = false;
                     do {
+                        if (failed != false) { console.log("almost made a chain at position:", { "x": x, "y": y }) }
+                        failed = true;
                         var blockType = Math.floor(Math.random() * numBlockColors);
-                    } while ((x >= 2 && blockType == field[y * numColumns + x - 1] && blockType == field[y * numColumns + x - 2])
-                        || (y >= 2 && blockType == field[(y - 1) * numColumns + x] && blockType == field[(y - 2) * numColumns + x]));
+                    } while ((x >= 2 && blockType == field[y * numColumns + x - 1].type && blockType == field[y * numColumns + x - 2].type)
+                        || (y >= 2 && blockType == field[(y - 1) * numColumns + x].type && blockType == field[(y - 2) * numColumns + x].type));
                     field[y * numColumns + x] = new block((blockType), x, y);
                     //console.log(field[y * numColumns + x], "field");
                 }
