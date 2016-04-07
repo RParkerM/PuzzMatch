@@ -20,6 +20,8 @@
         return seconds*1000;
     }
 
+    
+
     function Board(boardHeight, boardWidth, tileHeight, tileWidth, numBlockColors) {
 
         var self = this;
@@ -34,6 +36,8 @@
         var field = []; //contains the board state
         var matchAnimations = []; //contains array of matchAnimations
 
+        var animating = false;
+        var animationsFinished = 
 
         ///Objects
         function block(type, column, row) {
@@ -73,7 +77,7 @@
             this.unselect = function () {
                 this.selected = false;
             };
-        } 
+        }
 
         function Chain() {
             var _blocks = [];
@@ -194,6 +198,40 @@
             return verticalMatches; 
         };
 
+        var fillHoles = function fillHoles() {
+            var columns = [];
+            for (var column = 0; column < numColumns; column++) {
+                var array = [];
+                for (var row = numRows - 1; row > 0; row--) {
+                    var startBlock = getBlock(row, column);
+                    if (startBlock == null) (console.error("Something went wrong. Looking for column:", column, "row:", row))
+                    if (startBlock.type == -1) {
+                        for (var lookup = row - 1; lookup >= 0; lookup--) {
+                            var nextBlock = getBlock(lookup, column);
+                            if (nextBlock == null) (console.error("Something went wrong. Looking for column:", column, "row:", lookup))
+                            if (nextBlock.type != -1) {
+                                self.swapBlocks(startBlock, nextBlock);
+                                array.push(nextBlock);
+                                break;
+                            }
+                        }
+                    }
+                }
+                columns.push(array);
+            }
+            return columns;
+        };
+
+
+        var getBlock = function (row, column) { //expects row and column, returns the block or null
+            if (column >= 0 && column < numColumns && row >= 0 && row >= 0 && row < numRows) {
+                return field[row * numColumns + column];
+            }
+            //console.log("Row, column:", row, column, "=null");
+            console.error("Asked for value outside of board", { "row": row, "column": column });
+            return null;
+        };
+
         var shuffle = function () {
             //console.log("this.numRows:", numRows, "this.numColumns", numColumns, "this:", self);
             for (var y = 0; y < numRows; y++) {
@@ -234,7 +272,7 @@
             var now = Date.now();
             for (var i = 0; i < field.length; i++) {
 
-                field[i].draw(context);
+                field[i].draw(context, tileImage);
             }
             for(var i = 0; i < matchAnimations.length; i++){
                 matchAnimations[i].draw(context, now);
@@ -246,8 +284,10 @@
                 return field[row * this.numColumns + column];
             }
             //console.log("Row, column:", row, column, "=null");
+            console.error("Asked for value outside of board", { "row": row, "column": column });
             return null;
         };
+
         this.setBlock = function (row, column, block) {
             if (column >= 0 && column < this.numColumns && row >= 0 && row < this.numRows) {
                 field[row * this.numColumns + column] = block;
@@ -268,6 +308,7 @@
         this.solveBoard = function () {
             var chains = findHorizontalMatches();
             chains = chains.concat(findVerticalMatches());
+            if (chains.length < 1) { console.log("no matches :)"); return; }
             chains = chains.filter(function (v, i, arr) {
                 if(i >= arr.length -1){
                     return true;
@@ -288,10 +329,11 @@
             {
                 var str = "is not a row";
                 if (chains[i].isRow) str = "is a row";
-                console.log("Chain[", i, "]:", chains[i].blocks(), str);
+               // console.log("Chain[", i, "]:", chains[i].blocks(), str);
                 matchAnimations.push(new matchAnimation(chains[i],Date.now()+i*250));
                 chains[i].clear();
             }
+            console.log(fillHoles());
         };
 
         this.mouseToBlockCoords = function (coords) { // Expects x and y properties. Returns object with row and column properties

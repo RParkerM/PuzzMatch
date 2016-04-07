@@ -38,7 +38,7 @@
             var y = Math.min(lastMousePos.y, canvas.height/SCALE_Y);// - TILE_HEIGHT / 2 * SCALE_Y);
             x = Math.max(0, x);
             y = Math.max(0, y);
-            console.log("selectedBlock", selectedBlock, "positions:", { "x": x, "y": y }, "canvas dimensions", { "width": canvas.width, "height": canvas.height });
+            //console.log("selectedBlock", selectedBlock, "positions:", { "x": x, "y": y }, "canvas dimensions", { "width": canvas.width, "height": canvas.height });
             selectedBlock.drawSelected(ctx, x, y);
         }
     }
@@ -123,7 +123,7 @@
         var pos = board.mouseToBlockCoords(mouse);
         selectedBlock = board.getBlock(pos.row, pos.column);
         selectedBlock.select();
-        console.log(selectedBlock.description());
+        //console.log(selectedBlock.description());
     }
 
     function onMouseUp(e){
@@ -142,7 +142,7 @@
         var pos = board.mouseToBlockCoords(touchPos);
         selectedBlock = board.getBlock(pos.row, pos.column);
         selectedBlock.select();
-        console.log(selectedBlock.description());
+       // console.log(selectedBlock.description());
     }
     function onTouchEnd(e) {
        e.preventDefault();
