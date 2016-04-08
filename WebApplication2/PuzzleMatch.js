@@ -64,6 +64,7 @@
                 board.swapBlocks(selectedBlock, board.getBlock(coords.row, coords.column));
             }
         }
+        board.update();
     }
 
     function gameLoop()
@@ -84,6 +85,7 @@
         {   
             tileImage2 = window.resources.images["tileImage"];
             board = new Objects.Board(BOARD_HEIGHT, BOARD_WIDTH, TILE_HEIGHT, TILE_WIDTH, BLOCK_TYPES);
+            window.BOARD = board;
             initCanvas(canvas);
             board.init(tileImage2);
             gameLoop();

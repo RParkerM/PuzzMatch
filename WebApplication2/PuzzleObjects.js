@@ -1,6 +1,8 @@
 ﻿(function () {
 
     var TILE_SELECT_SIZE_MOD = puzzmatch.Constants.TILE_SELECT_SIZE_MOD;
+    var CHAIN_DISAPPEAR_TIME = puzzmatch.Constants.CHAIN_DISAPPEAR_TIME;
+    var BLOCK_FALLING_TIME = puzzmatch.Constants.BLOCK_FALLING_TIME;
 
     function doChainsHaveDuplicates(sourceChain, targetChain) { //this checks to see if chains should merge
         var sourceArray = sourceChain.blocks();
@@ -20,11 +22,21 @@
         return seconds*1000;
     }
 
-    
+    function BlockGenerator(blockTypes) { //this is what we should do to get new block types
+        var blockTypes = blockTypes;
+
+        this.getBlockType = function () {
+            var blockType = Math.floor(Math.random() * blockTypes);
+            return blockType;
+        };
+    }
 
     function Board(boardHeight, boardWidth, tileHeight, tileWidth, numBlockColors) {
 
         var self = this;
+
+        var AnimState = {"waiting":0,"matchAnim":1,"fallingAnim":2};
+
         //private properties
         var tileWidth = tileWidth;
         var tileHeight = tileHeight;
@@ -34,10 +46,14 @@
         var numColumns = boardWidth;
 
         var field = []; //contains the board state
-        var matchAnimations = []; //contains array of matchAnimations
+        var blockGen = new BlockGenerator(numBlockColors);
 
+        var missingBlocksInColumn = []; //contains needed blocks for 
+        var matchAnimations = []; //contains array of matchAnimations
+        var fallAnim = null; //contains instance of FallingAnimation to draw falling blocks
         var animating = false;
-        var animationsFinished = 
+        var animationsFinishedTime = 0;
+        var boardAnimationState = AnimState.waiting;
 
         ///Objects
         function block(type, column, row) {
@@ -54,11 +70,13 @@
                 return "Block type: " + this.type + " Position: " + this.row + "," + this.column + ".";
             };
 
-            this.draw = function (context) {
-                if (this.type == -1) return;
+            this.draw = function (context, x, y) {
+                if (this.type < 0) return;
                 context.save();
                 if (this.selected == true) context.globalAlpha = 0.5;
-                context.drawImage(tileImage, this.type * tileWidth, 0, tileWidth, tileHeight, this.column * tileWidth, this.row * tileHeight, tileWidth, tileHeight);
+                if (x == undefined) { x = this.column * tileWidth };
+                if (y == undefined) { y = this.row * tileHeight };
+                context.drawImage(tileImage, this.type * tileWidth, 0, tileWidth, tileHeight, x, y, tileWidth, tileHeight);
                 //format is ctx.drawImage(image, sx, sy, sWidth, sHeight, dx, dy, dWidth, dHeight);
                 context.restore();
             };
@@ -116,33 +134,31 @@
                 
             };
 
-            this.length = function () {
+            this.getLength = function () {
                 return _blocks.length;
             }
         } //chain object
 
         function matchAnimation(chain, timestart, duration) {
-            if (duration == undefined) { duration = 250; }
+            if (duration == undefined) { duration = CHAIN_DISAPPEAR_TIME; }
             var blockType = chain.blockType;
             var animChain = [];
             var timestart = timestart;
             var duration = duration;
 
-            for (var i = 0; i < chain.length(); i++){
+            for (var i = 0; i < chain.getLength(); i++){
                 animChain.push(chain.blocks()[i].clone());
             }
 
             this.draw = function (ctx, time) {
                 
                 if (time < timestart + duration) {
-                    //console.log("draw anim", (timestart-time+duration)/duration, duration);
                     ctx.save();
                     var alpha = Math.min((timestart-time+duration) / duration, 1);
                     ctx.globalAlpha = alpha;
                     for (var i = 0; i < animChain.length; i++) {
                         animChain[i].draw(ctx);
                     }
-                    //console.log(animChain);
                     ctx.restore();
                 }
             }
@@ -152,6 +168,22 @@
             }
         }
 
+        function FallingAnimation(blocks, timestart, duration) {
+            var blocks = blocks;
+            this.blocks = blocks;
+            var timestart = timestart;
+            var duration = duration;
+            this.length = blocks.length;
+            this.draw = function (ctx, now) {
+                if (now < timestart + duration) {
+                    var percentFallen = Math.min((now-timestart) / duration, 1);
+                    for (var i = 0; i < blocks.length; i++) {
+                        var y = (((blocks[i].row - blocks[i].prevRow) * percentFallen) + blocks[i].prevRow) * tileHeight;
+                        blocks[i].draw(ctx,undefined,y);//blocks[i].row*tileHeight-blocks);
+                    }
+                }
+            }
+        }
         ///functions
         var findHorizontalMatches = function () {
             var horizontalMatches = [];
@@ -164,7 +196,7 @@
                             newChain.addBlock(self.getBlock(y, x));
                             x += 1;
                         } while (x < numColumns && self.getBlock(y, x).type == blockType)
-                        if (newChain.length() == numColumns)
+                        if (newChain.getLength() == numColumns)
                         {
                             newChain.isRow = true;
                         }
@@ -198,8 +230,9 @@
             return verticalMatches; 
         };
 
-        var fillHoles = function fillHoles() {
+        var fillHoles = function fillHoles(now) { 
             var columns = [];
+            var foundBlockFalling = false;
             for (var column = 0; column < numColumns; column++) {
                 var array = [];
                 for (var row = numRows - 1; row > 0; row--) {
@@ -211,7 +244,11 @@
                             if (nextBlock == null) (console.error("Something went wrong. Looking for column:", column, "row:", lookup))
                             if (nextBlock.type != -1) {
                                 self.swapBlocks(startBlock, nextBlock);
-                                array.push(nextBlock);
+                                var animBlock = nextBlock.clone();
+                                animBlock.prevRow = lookup;
+                                array.push(animBlock);
+                                nextBlock.type = -2;
+                                foundBlockFalling = true;
                                 break;
                             }
                         }
@@ -219,9 +256,45 @@
                 }
                 columns.push(array);
             }
+            animating = true;
+            animationsFinishedTime = now + BLOCK_FALLING_TIME;
+            boardAnimationState = AnimState.fallingAnim;
+            var fallingBlocks = [].concat.apply([], columns);
+            //console.log(getMissingBlocks());
+            fallingBlocks = fallingBlocks.concat(getMissingBlocks());
+            fallAnim = new FallingAnimation(fallingBlocks,now,BLOCK_FALLING_TIME);
             return columns;
         };
 
+        var addUpMissingBlocks = function (chains) {
+            for (var i = 0; i < chains.length; i++) {
+                var chain = chains[i];
+                for (var j = 0; j < chain.getLength();j++) {
+                    var block = chain.blocks()[j];
+                    if (missingBlocksInColumn[block.column] == undefined) {
+                        missingBlocksInColumn[block.column] = 0;
+                    }
+                    missingBlocksInColumn[block.column] += 1;
+                }
+            }
+        }
+        var getMissingBlocks = function () {
+            var blocks = [];
+            for (var col = 0; col < numColumns; col++) {
+                if (missingBlocksInColumn[col] != undefined) {
+                    var depth = missingBlocksInColumn[col];
+                    for (var i = 0; i < depth; i++) {
+                        var newBlock = new block(blockGen.getBlockType(), col, i);
+                        //console.log({ "col": col, "row": i, "type": newBlock.type,"oldRow":i-depth });
+                        newBlock.prevRow = i - depth;
+                        blocks.push(newBlock);
+                    }
+                }
+            }
+            missingBlocksInColumn = [];
+
+            return blocks;
+        }
 
         var getBlock = function (row, column) { //expects row and column, returns the block or null
             if (column >= 0 && column < numColumns && row >= 0 && row >= 0 && row < numRows) {
@@ -272,10 +345,13 @@
             var now = Date.now();
             for (var i = 0; i < field.length; i++) {
 
-                field[i].draw(context, tileImage);
+                field[i].draw(context);
             }
             for(var i = 0; i < matchAnimations.length; i++){
                 matchAnimations[i].draw(context, now);
+            }
+            if (fallAnim != null) {
+                fallAnim.draw(context, now);
             }
         };
 
@@ -290,6 +366,8 @@
 
         this.setBlock = function (row, column, block) {
             if (column >= 0 && column < this.numColumns && row >= 0 && row < this.numRows) {
+                block.row = row;
+                block.column = column;
                 field[row * this.numColumns + column] = block;
             }
         };
@@ -325,15 +403,19 @@
                 return true;
                 
             });  //this just combines the chains. kinda of hacky, TODO fix this
+            var now = Date.now();
             for (i = 0; i < chains.length; i++)
             {
                 var str = "is not a row";
                 if (chains[i].isRow) str = "is a row";
-               // console.log("Chain[", i, "]:", chains[i].blocks(), str);
-                matchAnimations.push(new matchAnimation(chains[i],Date.now()+i*250));
+                matchAnimations.push(new matchAnimation(chains[i],now+i*CHAIN_DISAPPEAR_TIME));
                 chains[i].clear();
             }
-            console.log(fillHoles());
+            addUpMissingBlocks(chains);
+            console.log(missingBlocksInColumn);
+            animating = true;
+            animationsFinishedTime = CHAIN_DISAPPEAR_TIME * chains.length + now;
+            boardAnimationState = AnimState.matchAnim;
         };
 
         this.mouseToBlockCoords = function (coords) { // Expects x and y properties. Returns object with row and column properties
@@ -353,8 +435,29 @@
             }
             return { "row": row, "column": col };
         };
-    }
 
+        this.update = function () {
+            if (animating == true) {
+                var now = Date.now();
+                if (animationsFinishedTime < now) {
+                    animating = false;
+                    if (boardAnimationState == AnimState.matchAnim) {
+                        console.log("finshed animating matches ^^");
+                        matchAnimations = [];
+                        fillHoles(now);
+                    } else if (boardAnimationState == AnimState.fallingAnim) {
+                        console.log("finished block falling animation");
+                        for (var i = 0; i < fallAnim.length; i++) {
+                            var block = fallAnim.blocks[i];
+                            this.setBlock(block.row,block.column,block.clone());
+                        }
+                        fallAnim = null;
+                        this.solveBoard();
+                    }
+                }
+            }
+        };
+    }
 
 
     var Objects = { "Board": Board };
