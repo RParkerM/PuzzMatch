@@ -2,7 +2,8 @@
 
     var Objects = puzzmatch.Objects; //module for objects
     var Constants = puzzmatch.Constants; //module for constants
-
+    var Input = puzzmatch.Input;
+    console.log(Input);
     //current constants for board and tile widths... 
     //TODO: put this in a seperate file?
 
@@ -120,6 +121,7 @@
 
     function onMouseDown(e)
     {
+        if (Input.isLocked()) { console.log("input is locked"); return; }
         var mouse = getMousePos(canvas, e);
         lastMousePos = mouse;
         var pos = board.mouseToBlockCoords(mouse);
@@ -131,6 +133,7 @@
     function onMouseUp(e){
         if (selectedBlock)
         {
+            Input.Lock();
             selectedBlock.unselect();
             selectedBlock = null;
             board.solveBoard();
@@ -139,6 +142,7 @@
 
     function onTouchStart(e) {
         e.preventDefault();
+        if (Input.isLocked()) { return; }
         var touchPos = getTouchPos(canvas, e);
         lastMousePos = touchPos;
         var pos = board.mouseToBlockCoords(touchPos);
@@ -151,6 +155,7 @@
         if (selectedBlock) {
             selectedBlock.unselect();
             selectedBlock = null;
+            Input.Lock();
             board.solveBoard();
         }
     }

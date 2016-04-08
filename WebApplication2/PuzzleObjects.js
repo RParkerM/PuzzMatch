@@ -3,6 +3,7 @@
     var TILE_SELECT_SIZE_MOD = puzzmatch.Constants.TILE_SELECT_SIZE_MOD;
     var CHAIN_DISAPPEAR_TIME = puzzmatch.Constants.CHAIN_DISAPPEAR_TIME;
     var BLOCK_FALLING_TIME = puzzmatch.Constants.BLOCK_FALLING_TIME;
+    var Input = puzzmatch.Input;
 
     function doChainsHaveDuplicates(sourceChain, targetChain) { //this checks to see if chains should merge
         var sourceArray = sourceChain.blocks();
@@ -260,7 +261,6 @@
             animationsFinishedTime = now + BLOCK_FALLING_TIME;
             boardAnimationState = AnimState.fallingAnim;
             var fallingBlocks = [].concat.apply([], columns);
-            //console.log(getMissingBlocks());
             fallingBlocks = fallingBlocks.concat(getMissingBlocks());
             fallAnim = new FallingAnimation(fallingBlocks,now,BLOCK_FALLING_TIME);
             return columns;
@@ -309,10 +309,7 @@
             //console.log("this.numRows:", numRows, "this.numColumns", numColumns, "this:", self);
             for (var y = 0; y < numRows; y++) {
                 for (var x = 0; x < numColumns; x++) {
-                    var failed = false;
                     do {
-                        if (failed != false) { console.log("almost made a chain at position:", { "x": x, "y": y }) }
-                        failed = true;
                         var blockType = Math.floor(Math.random() * numBlockColors);
                     } while ((x >= 2 && blockType == field[y * numColumns + x - 1].type && blockType == field[y * numColumns + x - 2].type)
                         || (y >= 2 && blockType == field[(y - 1) * numColumns + x].type && blockType == field[(y - 2) * numColumns + x].type));
@@ -386,7 +383,7 @@
         this.solveBoard = function () {
             var chains = findHorizontalMatches();
             chains = chains.concat(findVerticalMatches());
-            if (chains.length < 1) { console.log("no matches :)"); return; }
+            if (chains.length < 1) { Input.Unlock(); return; }
             chains = chains.filter(function (v, i, arr) {
                 if(i >= arr.length -1){
                     return true;
@@ -394,7 +391,7 @@
                 for (j = i+1; j < arr.length; j++) {
                     if(doChainsHaveDuplicates(v, arr[j]))
                     {
-                        //console.log("arrays have dupes...?")
+                        
                         arr[j].setBlocks((arr[j].blocks().concat(v.blocks())));
                         arr[j].isRow = arr[j].isRow || v.isRow;
                         return false;
@@ -412,7 +409,7 @@
                 chains[i].clear();
             }
             addUpMissingBlocks(chains);
-            console.log(missingBlocksInColumn);
+            
             animating = true;
             animationsFinishedTime = CHAIN_DISAPPEAR_TIME * chains.length + now;
             boardAnimationState = AnimState.matchAnim;
@@ -442,11 +439,11 @@
                 if (animationsFinishedTime < now) {
                     animating = false;
                     if (boardAnimationState == AnimState.matchAnim) {
-                        console.log("finshed animating matches ^^");
+                        //console.log("finshed animating matches ^^");
                         matchAnimations = [];
                         fillHoles(now);
                     } else if (boardAnimationState == AnimState.fallingAnim) {
-                        console.log("finished block falling animation");
+                        //console.log("finished block falling animation");
                         for (var i = 0; i < fallAnim.length; i++) {
                             var block = fallAnim.blocks[i];
                             this.setBlock(block.row,block.column,block.clone());
