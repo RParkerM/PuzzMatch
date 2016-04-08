@@ -38,7 +38,7 @@
             var y = Math.min(lastMousePos.y, canvas.height/SCALE_Y);// - TILE_HEIGHT / 2 * SCALE_Y);
             x = Math.max(0, x);
             y = Math.max(0, y);
-            console.log("selectedBlock", selectedBlock, "positions:", { "x": x, "y": y }, "canvas dimensions", { "width": canvas.width, "height": canvas.height });
+            //console.log("selectedBlock", selectedBlock, "positions:", { "x": x, "y": y }, "canvas dimensions", { "width": canvas.width, "height": canvas.height });
             selectedBlock.drawSelected(ctx, x, y);
         }
     }
@@ -64,6 +64,7 @@
                 board.swapBlocks(selectedBlock, board.getBlock(coords.row, coords.column));
             }
         }
+        board.update();
     }
 
     function gameLoop()
@@ -84,6 +85,7 @@
         {   
             tileImage2 = window.resources.images["tileImage"];
             board = new Objects.Board(BOARD_HEIGHT, BOARD_WIDTH, TILE_HEIGHT, TILE_WIDTH, BLOCK_TYPES);
+            window.BOARD = board;
             initCanvas(canvas);
             board.init(tileImage2);
             gameLoop();
@@ -123,7 +125,7 @@
         var pos = board.mouseToBlockCoords(mouse);
         selectedBlock = board.getBlock(pos.row, pos.column);
         selectedBlock.select();
-        console.log(selectedBlock.description());
+        //console.log(selectedBlock.description());
     }
 
     function onMouseUp(e){
@@ -142,7 +144,7 @@
         var pos = board.mouseToBlockCoords(touchPos);
         selectedBlock = board.getBlock(pos.row, pos.column);
         selectedBlock.select();
-        console.log(selectedBlock.description());
+       // console.log(selectedBlock.description());
     }
     function onTouchEnd(e) {
        e.preventDefault();
