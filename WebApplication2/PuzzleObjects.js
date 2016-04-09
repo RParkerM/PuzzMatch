@@ -4,6 +4,7 @@
     var CHAIN_DISAPPEAR_TIME = puzzmatch.Constants.CHAIN_DISAPPEAR_TIME;
     var BLOCK_FALLING_TIME = puzzmatch.Constants.BLOCK_FALLING_TIME;
     var Input = puzzmatch.Input;
+    var AudioManager = puzzmatch.AudioManager;
 
     function doChainsHaveDuplicates(sourceChain, targetChain) { //this checks to see if chains should merge
         var sourceArray = sourceChain.blocks();
@@ -383,7 +384,7 @@
         this.solveBoard = function () {
             var chains = findHorizontalMatches();
             chains = chains.concat(findVerticalMatches());
-            if (chains.length < 1) { Input.Unlock(); return; }
+            if (chains.length < 1) { Input.Unlock(); AudioManager.resetCombo(); return; }
             chains = chains.filter(function (v, i, arr) {
                 if(i >= arr.length -1){
                     return true;
@@ -405,7 +406,8 @@
             {
                 var str = "is not a row";
                 if (chains[i].isRow) str = "is a row";
-                matchAnimations.push(new matchAnimation(chains[i],now+i*CHAIN_DISAPPEAR_TIME));
+                matchAnimations.push(new matchAnimation(chains[i], now + i * CHAIN_DISAPPEAR_TIME));
+                AudioManager.queueComboSound(now + i * CHAIN_DISAPPEAR_TIME);
                 chains[i].clear();
             }
             addUpMissingBlocks(chains);

@@ -83,6 +83,7 @@
     <Import Include="System.Web.UI.HtmlControls" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Audio.js" />
     <Content Include="index.html" />
     <Content Include="Input.js" />
     <Content Include="main.js" />

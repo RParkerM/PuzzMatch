@@ -8,13 +8,25 @@
         -->
     
     <script src="resources.js"></script>
+    <script src="Audio.js"></script>
     <script src="Input.js"></script>
     <script src="PuzzleConstants.js"></script>
     <script src="PuzzleObjects.js"></script>
     <script src="PuzzleMatch.js"></script> <!-- always needs to before main and after everything else -->
     <script src="main.js"></script> <!-- always needs to be included last -->
+    <style>
+        #volume_control {
+            writing-mode: bt-lr; /* IE */
+            -webkit-appearance: slider-vertical; /* WebKit */
+            width: 8px;
+            height: 175px;
+            padding: 0 5px;
+        }
+    </style>
 </head>
 <body>
-    <div id="gameContainer"></div>
+    <span id="gameContainer"></span>
+    <label for="volume_control">Volume</label>
+    <input id="volume_control" type="range" min="0" max="100" value="100" onchange="puzzmatch.AudioManager.changeVolume(this.value)" oninput="puzzmatch.AudioManager.changeVolume(this.value)"/>
 </body>
 </html>

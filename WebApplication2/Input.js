@@ -10,11 +10,11 @@
             return locked;
         };
         this.Lock = function () {
-            console.log("locking input");
+            //console.log("locking input");
             locked = true;
         };
         this.Unlock = function () {
-            console.log("unlocking input");
+           // console.log("unlocking input");
             locked = false;
         };
     }
