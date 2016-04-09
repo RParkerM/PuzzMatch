@@ -1,8 +1,10 @@
 ﻿(function () {
 
+    var AudioManager = puzzmatch.AudioManager;
     var Objects = puzzmatch.Objects; //module for objects
     var Constants = puzzmatch.Constants; //module for constants
-
+    var Input = puzzmatch.Input;
+    console.log(Input);
     //current constants for board and tile widths... 
     //TODO: put this in a seperate file?
 
@@ -56,15 +58,18 @@
 
     function update()
     {
+        var now = Date.now();
         if(selectedBlock)
         {
             var coords = board.mouseToBlockCoords(lastMousePos);
             if(coords.row != selectedBlock.row || coords.column != selectedBlock.column) //
             {
                 board.swapBlocks(selectedBlock, board.getBlock(coords.row, coords.column));
+                AudioManager.playSound("click");
             }
         }
         board.update();
+        AudioManager.update(now);
     }
 
     function gameLoop()
@@ -120,6 +125,7 @@
 
     function onMouseDown(e)
     {
+        if (Input.isLocked()) { console.log("input is locked"); return; }
         var mouse = getMousePos(canvas, e);
         lastMousePos = mouse;
         var pos = board.mouseToBlockCoords(mouse);
@@ -131,6 +137,7 @@
     function onMouseUp(e){
         if (selectedBlock)
         {
+            Input.Lock();
             selectedBlock.unselect();
             selectedBlock = null;
             board.solveBoard();
@@ -139,6 +146,7 @@
 
     function onTouchStart(e) {
         e.preventDefault();
+        if (Input.isLocked()) { return; }
         var touchPos = getTouchPos(canvas, e);
         lastMousePos = touchPos;
         var pos = board.mouseToBlockCoords(touchPos);
@@ -151,6 +159,7 @@
         if (selectedBlock) {
             selectedBlock.unselect();
             selectedBlock = null;
+            Input.Lock();
             board.solveBoard();
         }
     }

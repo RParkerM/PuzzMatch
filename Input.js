@@ -3,17 +3,19 @@
 
     //this is everything that will go in the Input namespace
     function Input() {
-        var _locked = false;
+        var locked = false;
 
 
-        var isLocked = function () {
-            return _locked;
+        this.isLocked = function () {
+            return locked;
         };
-        var Lock = function () {
-            _locked = true;
+        this.Lock = function () {
+            //console.log("locking input");
+            locked = true;
         };
-        var Unlock = function () {
-            _locked = false;
+        this.Unlock = function () {
+           // console.log("unlocking input");
+            locked = false;
         };
     }
 
