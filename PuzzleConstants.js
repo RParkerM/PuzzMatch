@@ -8,8 +8,8 @@
 
     var BLOCK_TYPES = 6;
 
-    var CHAIN_DISAPPEAR_TIME = 250;
-    var BLOCK_FALLING_TIME = 125;
+    var CHAIN_DISAPPEAR_TIME = 350;
+    var BLOCK_FALLING_TIME = 175;
 
 
     //this is everything that will go in the Constants namespace
